@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "gymnasium>=1.2.0",
     "numpy>=2.3.1",
     "pygame>=2.6.1",
 ]

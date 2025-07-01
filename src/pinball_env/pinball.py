@@ -17,6 +17,11 @@ try:
 except ImportError as e:
     print('Pygame not available', e)
 
+try:
+    import gymnasium as gym
+except ImportError as e:
+    print('Gymnasium not available', e)
+
 class BallModel:
     """ This class maintains the state of the ball
     in the pinball domain. It takes care of moving
@@ -279,6 +284,7 @@ class PinballModel:
                 if not len(tokens):
                     continue
                 elif tokens[0] == 'polygon':
+                    # legacy
                     # self.obstacles.append(
                     #     PinballObstacle(zip(*[iter(map(float, tokens[1:]))] * 2)))
 
@@ -383,6 +389,55 @@ class PinballModel:
         if self.ball.position[1] < 0.0:
             self.ball.position[1] = 0.05
 
+class PinballEnv(gym.Env):
+    """ This class is a wrapper for the :class:`PinballModel` to
+    make it compatible with the `gymnasium <https://gymnasium.farama.org/>`_ API.
+    It allows the pinball domain to be used with RL algorithms
+    that expect a gymnasium environment.
+    """
+
+    def __init__(self, configuration):
+        """ Initialize the pinball environment
+
+        :param configuration: The path to a configuration file for a :class:`PinballModel`
+        :type configuration: str
+        """
+        super(PinballEnv, self).__init__()
+        self.configuration = configuration
+        self.pinball = None
+
+        self._init_pinball()
+
+    def _init_pinball(self):
+        self.pinball = PinballModel(self.configuration)
+
+        # Define the action and observation spaces
+        self.action_space = gym.spaces.Discrete(5)  # Right (ACC_X), Up (ACC_Y), Left (DEC_X), Down (DEC_Y) and Do nothing(ACC_NONE)
+        self.observation_space = gym.spaces.Box(
+            low=np.array([0.0, 0.0, -1.0, -1.0]),
+            high=np.array([1.0, 1.0, 1.0, 1.0]),
+            dtype=np.float32
+        )  # 4-dimensional state: [x position, y position, xdot, ydot]
+
+    def reset(self):
+        """ Reset the environment to the initial state """
+        self._init_pinball()
+        return self.pinball.get_state(), {}
+
+    def step(self, action):
+        """ Take a step in the environment """
+        reward = self.pinball.take_action(action)
+        obs = self.pinball.get_state()
+        done = self.pinball.episode_ended()
+        return obs, reward, done, {}, {}
+
+    def render(self, mode='human'):
+        pass
+
+    def close(self):
+        """ Close the environment """
+        if self.pinball is not None:
+            self.pinball = None
 
 class PinballView:
     """ This class displays a :class:`PinballModel`
@@ -491,6 +546,20 @@ if __name__ == "__main__":
                         default=500, help='screen width (default: 500)')
     parser.add_argument('--height', action='store', type=int,
                         default=500, help='screen height (default: 500)')
+    parser.add_argument('--gym', action='store_true',
+                        help='use gymnasium environment instead of pinball view')
     args = parser.parse_args()
 
-    run_pinballview(args.width, args.height, args.configuration)
+    if args.gym:
+        # If gymnasium is requested, create the environment
+        env = PinballEnv(args.configuration)
+        state, info = env.reset()
+        print("Pinball environment created with configuration:", args.configuration)
+        print("Action space:", env.action_space)
+        print("Observation space:", env.observation_space)
+        print("Initial state:", state)
+        print("You can now use this environment with RL algorithms.")
+        # Note: You can add more code here to interact with the environment
+        # using the gymnasium API, such as running episodes, training agents, etc.
+    else:
+        run_pinballview(args.width, args.height, args.configuration)
