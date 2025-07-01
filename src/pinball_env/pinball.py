@@ -432,7 +432,7 @@ class PinballEnv(gym.Env):
         return obs, reward, done, {}, {}
 
     def render(self, mode='human'):
-        pass
+        raise NotImplementedError("Rendering is not implemented in this environment. Use run_pinballview for rendering.")
 
     def close(self):
         """ Close the environment """
