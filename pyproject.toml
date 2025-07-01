@@ -1,0 +1,17 @@
+[project]
+name = "pinball-env"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "luizth", email = "luizthomasini@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.3.1",
+    "pygame>=2.6.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
