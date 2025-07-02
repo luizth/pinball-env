@@ -2,6 +2,14 @@
 
 The Pinball Domain for skill discovery in reinforcement learning.
 
+## Installation
+
+You can download and make the library available in your project using _pip_.
+
+```bash
+$ pip install git+https://github.com/luizth/pinball-env.git
+```
+
 ## Reference
 
 The Pinball Domain was introduced by G. D. Konidaris and A. G. Barto in early skill discovery work [1].
