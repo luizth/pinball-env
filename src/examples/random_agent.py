@@ -19,6 +19,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Pinball domain')
     parser.add_argument('configuration', help='the configuration file')
     args = parser.parse_args()
-    env = PinballEnv(args.configuration)
+    env = PinballEnv(configuration_file=args.configuration)
     random_agent(env)
     env.close()

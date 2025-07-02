@@ -259,7 +259,7 @@ class PinballModel:
     THRUST_PENALTY = -5
     END_EPISODE = 10000
 
-    def __init__(self, configuration):
+    def __init__(self, configuration: str = None, configuration_file=None):
         """ Read a configuration file for Pinball and draw the domain to screen
 
         :param configuration: a configuration file containing the polygons,
@@ -267,6 +267,9 @@ class PinballModel:
         :type configuration: str
 
         """
+        if configuration is None and configuration_file is None:
+            raise ValueError("You must provide a configuration file or a configuration string.")
+
         self.action_effects = {self.ACC_X:(1, 0), self.ACC_Y:(0, 1), self.DEC_X:(-1, 0), self.DEC_Y:(0, -1), self.ACC_NONE:(0, 0)}
 
         random.seed()
@@ -278,43 +281,52 @@ class PinballModel:
 
         ball_rad = 0.01
         start_pos = []
-        with open(configuration) as fp:
-            for line in fp.readlines():
-                tokens = line.strip().split()
-                if not len(tokens):
-                    continue
-                elif tokens[0] == 'polygon':
-                    # legacy
-                    # self.obstacles.append(
-                    #     PinballObstacle(zip(*[iter(map(float, tokens[1:]))] * 2)))
 
-                    # Parse coordinate pairs properly
-                    coords = list(map(float, tokens[1:]))
-                    if len(coords) % 2 != 0:
-                        raise ValueError("Polygon must have even number of coordinates (x,y pairs)")
+        if configuration is not None:
+            # If a configuration string is provided, parse it
+            parsedlines = configuration.splitlines()
 
-                    # Group coordinates into (x,y) pairs
-                    points = []
-                    for i in range(0, len(coords), 2):
-                        points.append([coords[i], coords[i+1]])
+        if configuration is None and configuration_file is not None:
+            with open(configuration_file) as fp:
+                # If a configuration file is provided, read it
+                parsedlines = fp.readlines()
 
-                    # print("Creating obstacle with points:", points)
-                    self.obstacles.append(PinballObstacle(points))
-                elif tokens[0] == 'target':
-                    self.target_pos = [float(tokens[1]), float(tokens[2])]
-                    self.target_rad = float(tokens[3])
-                elif tokens[0] == 'start':
-                    coords = list(map(float, tokens[1:]))
-                    if len(coords) % 2 != 0:
-                        raise ValueError("Start positions must have even number of coordinates")
+        for line in parsedlines:
+            tokens = line.strip().split()
+            if not len(tokens):
+                continue
+            elif tokens[0] == 'polygon':
+                # legacy
+                # self.obstacles.append(
+                #     PinballObstacle(zip(*[iter(map(float, tokens[1:]))] * 2)))
 
-                    start_pos = []
-                    for i in range(0, len(coords), 2):
-                        start_pos.append([coords[i], coords[i+1]])
+                # Parse coordinate pairs properly
+                coords = list(map(float, tokens[1:]))
+                if len(coords) % 2 != 0:
+                    raise ValueError("Polygon must have even number of coordinates (x,y pairs)")
 
-                    # print("Start positions:", start_pos)
-                elif tokens[0] == 'ball':
-                    ball_rad = float(tokens[1])
+                # Group coordinates into (x,y) pairs
+                points = []
+                for i in range(0, len(coords), 2):
+                    points.append([coords[i], coords[i+1]])
+
+                # print("Creating obstacle with points:", points)
+                self.obstacles.append(PinballObstacle(points))
+            elif tokens[0] == 'target':
+                self.target_pos = [float(tokens[1]), float(tokens[2])]
+                self.target_rad = float(tokens[3])
+            elif tokens[0] == 'start':
+                coords = list(map(float, tokens[1:]))
+                if len(coords) % 2 != 0:
+                    raise ValueError("Start positions must have even number of coordinates")
+
+                start_pos = []
+                for i in range(0, len(coords), 2):
+                    start_pos.append([coords[i], coords[i+1]])
+
+                # print("Start positions:", start_pos)
+            elif tokens[0] == 'ball':
+                ball_rad = float(tokens[1])
 
         self.ball = BallModel(list(random.choice(start_pos)), ball_rad)
 
@@ -396,7 +408,7 @@ class PinballEnv(gym.Env):
     that expect a gymnasium environment.
     """
 
-    def __init__(self, configuration):
+    def __init__(self, configuration: str =None, configuration_file=None):
         """ Initialize the pinball environment
 
         :param configuration: The path to a configuration file for a :class:`PinballModel`
@@ -404,12 +416,13 @@ class PinballEnv(gym.Env):
         """
         super(PinballEnv, self).__init__()
         self.configuration = configuration
+        self.configuration_file = configuration_file
         self.pinball = None
 
         self._init_pinball()
 
     def _init_pinball(self):
-        self.pinball = PinballModel(self.configuration)
+        self.pinball = PinballModel(self.configuration, self.configuration_file)
 
         # Define the action and observation spaces
         self.action_space = gym.spaces.Discrete(5)  # Right (ACC_X), Up (ACC_Y), Left (DEC_X), Down (DEC_Y) and Do nothing(ACC_NONE)
@@ -491,7 +504,7 @@ class PinballView:
                            self._to_pixels(self.model.ball.position), int(self.model.ball.radius*self.screen.get_width()))
 
 
-def run_pinballview(width, height, configuration):
+def run_pinballview(width, height, configuration=None, configuration_file=None):
     """ Controller function for a :class:`PinballView`
 
     :param width: The desired screen width in pixels
@@ -507,7 +520,7 @@ def run_pinballview(width, height, configuration):
     pygame.display.set_caption('Pinball Domain')
     screen = pygame.display.set_mode([width, height])
 
-    environment = PinballModel(configuration)
+    environment = PinballModel(configuration, configuration_file)
     environment_view = PinballView(screen, environment)
 
     actions = {pygame.K_RIGHT:PinballModel.ACC_X, pygame.K_UP:PinballModel.DEC_Y, pygame.K_LEFT:PinballModel.DEC_X, pygame.K_DOWN:PinballModel.ACC_Y}
@@ -552,7 +565,7 @@ if __name__ == "__main__":
 
     if args.gym:
         # If gymnasium is requested, create the environment
-        env = PinballEnv(args.configuration)
+        env = PinballEnv(configuration_file=args.configuration)
         state, info = env.reset()
         print("Pinball environment created with configuration:", args.configuration)
         print("Action space:", env.action_space)
@@ -562,4 +575,5 @@ if __name__ == "__main__":
         # Note: You can add more code here to interact with the environment
         # using the gymnasium API, such as running episodes, training agents, etc.
     else:
-        run_pinballview(args.width, args.height, args.configuration)
+        from pinball_env.pinball_configs import pinball_simple_single
+        run_pinballview(args.width, args.height, configuration=pinball_simple_single, configuration_file=args.configuration)
