@@ -41,6 +41,30 @@ polygon 0.75 0.025 0.8 0.24 0.725 0.27 0.7 0.025
 """
 
 
+# Dictionary to hold available configurations
+import random
+class ConfigDict(dict):
+    """A dictionary that supports sampling random values."""
+
+    def sample(self):
+        """Return a random configuration from the available configs."""
+        if not self:
+            raise ValueError("No configurations available to sample from")
+        return random.choice(list(self.values()))
+
+    def __repr__(self):
+        """Return a string representation of the dictionary."""
+        return self.keys().__repr__()
+
+# Dictionary to hold available configurations
+available_configs = ConfigDict({
+    "pinball_hard_single": pinball_hard_single,
+    "pinball_simple_single": pinball_simple_single,
+})
+
+
 if __name__ == "__main__":
-    for line in pinball_simple_single.splitlines():
-        print(line)
+    # Example usage
+    print("Available Configurations:", available_configs)
+    config = available_configs.sample()
+    print("Sampled Config:\n", config)

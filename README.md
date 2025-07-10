@@ -10,6 +10,22 @@ You can download and make the library available in your project using _pip_.
 $ pip install git+https://github.com/luizth/pinball-env.git
 ```
 
+
+## Usage
+
+Simple instructions on how to import and instanciate an environment using available configurations.
+
+```python
+from pinball_env.pinball import PinballEnv
+from pinball_env.pinball_config import available_configs
+
+print(available_configs)  # dict_keys(['pinball_hard_single', 'pinball_simple_single'])
+
+env = PinballEnv(available_configs.sample())
+env_simple = PinballEnv(available_configs.get('pinball_simple_single'))
+```
+
+
 ## Reference
 
 The Pinball Domain was introduced by G. D. Konidaris and A. G. Barto in early skill discovery work [1].
