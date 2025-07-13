@@ -26,6 +26,18 @@ env_simple = PinballEnv(available_configs.get('pinball_simple_single'))
 ```
 
 
+## Feature Construction
+
+```python
+from pinball_env.feature_construction.tile_coder import PinballTileCoder
+
+coder = PinballTileCoder(32, 8, 4096)
+
+state, info = env.reset()
+coder.get_state_features(*state)  # returns np.array of size coder.iht_size
+```
+
+
 ## Reference
 
 The Pinball Domain was introduced by G. D. Konidaris and A. G. Barto in early skill discovery work [1].
