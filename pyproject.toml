@@ -1,7 +1,7 @@
 [project]
 name = "pinball-env"
 version = "0.1.0"
-description = "Add your description here"
+description = "Pinball domain for reinforcement learning"
 readme = "README.md"
 authors = [
     { name = "luizth", email = "luizthomasini@gmail.com" }
@@ -16,3 +16,13 @@ dependencies = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pinball_env"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/pinball_env" = "pinball_env"
+
+# Include external dependencies in the package
+[tool.hatch.build.targets.wheel.force-include]
+"src/pinball_env/external/tiles3.py" = "pinball_env/external/tiles3.py"

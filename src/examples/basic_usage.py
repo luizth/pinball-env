@@ -15,6 +15,7 @@ def random_agent(env: PinballEnv):
 
 
 if __name__ == "__main__":
+    # $ python3 random_agent.py ~/pinball_env/configs/pinball_simple_single.cfg
     import argparse
     parser = argparse.ArgumentParser(description='Pinball domain')
     parser.add_argument('configuration', help='the configuration file')
