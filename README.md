@@ -28,6 +28,15 @@ env_simple = PinballEnv(available_configs.get('pinball_simple_single'))
 
 ## Feature Construction
 
+There are feature constructions approaches included to use for adapting classical RL algorithms to
+work with the continous state space data.
+
+### Tile Coding
+
+Provides both generalization and discrimination of the state space. It converts the 4-dimensional
+continous state space in a np.array of IHT size. The features are zero (deactivated) except for active
+tiles that are 1. This approach is especially useful for working with linear function approximation.
+
 ```python
 from pinball_env.feature_construction.tile_coder import PinballTileCoder
 
