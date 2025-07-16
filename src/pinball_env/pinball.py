@@ -339,6 +339,18 @@ class PinballModel:
     	"""
         return [self.ball.position[0], self.ball.position[1], self.ball.xdot, self.ball.ydot]
 
+    def set_state(self, state):
+        """ Set the current state of the ball
+
+        :param state: A list containing the x position, y position, xdot, ydot
+        :type state: list
+        """
+        if len(state) != 4:
+            raise ValueError("State must be a list of 4 elements: [x, y, xdot, ydot]")
+        self.ball.position = [state[0], state[1]]
+        self.ball.xdot = state[2]
+        self.ball.ydot = state[3]
+
     def take_action(self, action):
         """ Take a step in the environment
 
@@ -431,6 +443,19 @@ class PinballEnv(gym.Env):
             high=np.array([1.0, 1.0, 1.0, 1.0]),
             dtype=np.float32
         )  # 4-dimensional state: [x position, y position, xdot, ydot]
+
+    def copy(self):
+        """ Create a copy of the environment """
+        new_env = PinballEnv(self.configuration, self.configuration_file)
+        return new_env
+
+    def set_state(self, state):
+        """ Set the state of the ball in the environment
+
+        :param state: A list containing the x position, y position, xdot, ydot
+        :type state: list
+        """
+        self.pinball.set_state(state)
 
     def reset(self):
         """ Reset the environment to the initial state """
